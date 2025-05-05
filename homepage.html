@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EdPeer - Peer-to-Peer Learning Platform</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary-color: #2563eb;
+        --secondary-color: #10b981;
+        --accent-color: #8b5cf6;
+        --dark-color: #1e293b;
+        --light-color: #f8fafc;
+        --success-color: #22c55e;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --gray-color: #6b7280;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background-color: #f3f4f6;
+        color: var(--dark-color);
+        line-height: 1.6;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Navbar Styles */
+      .navbar {
+        background-color: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+      }
+
+      .navbar-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+      }
+
+      .logo img {
+        height: 40px;
+      }
+
+      .logo-text {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 2rem;
+        list-style: none;
+      }
+
+      .nav-links li a {
+        text-decoration: none;
+        color: var(--dark-color);
+        font-weight: 500;
+        transition: color 0.3s;
+      }
+
+      .nav-links li a:hover {
+        color: var(--primary-color);
+      }
+
+      .auth-buttons {
+        display: flex;
+        gap: 1rem;
+      }
+
+      .btn {
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .btn-primary {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+      }
+
+      .btn-primary:hover {
+        background-color: #1d4ed8;
+      }
+
+      .btn-outline {
+        background-color: transparent;
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+      }
+
+      .btn-outline:hover {
+        background-color: #dbeafe;
+      }
+
+      .mobile-menu-btn {
+        display: none;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--dark-color);
+      }
+
+      /* Hero Section */
+      .hero {
+        padding-top: 7rem;
+        padding-bottom: 5rem;
+        background: linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%);
+        text-align: center;
+      }
+
+      .hero-content {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .hero h1 {
+        font-size: 3rem;
+        margin-bottom: 1.5rem;
+        color: var(--dark-color);
+      }
+
+      .hero p {
+        font-size: 1.25rem;
+        color: var(--gray-color);
+        margin-bottom: 2rem;
+      }
+
+      .hero-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 3rem;
+      }
+
+      .hero-image {
+        max-width: 100%;
+        height: auto;
+        margin-top: 2rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Features Section */
+      .features {
+        padding: 5rem 0;
+        background-color: white;
+      }
+
+      .section-title {
+        text-align: center;
+        margin-bottom: 3rem;
+      }
+
+      .section-title h2 {
+        font-size: 2.5rem;
+        color: var(--dark-color);
+        margin-bottom: 1rem;
+      }
+
+      .section-title p {
+        color: var(--gray-color);
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+      }
+
+      .feature-card {
+        background-color: #f8fafc;
+        border-radius: 0.5rem;
+        padding: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .feature-icon {
+        font-size: 2rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+      }
+
+      .feature-card h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .feature-card p {
+        color: var(--gray-color);
+      }
+
+      /* How It Works Section */
+      .how-it-works {
+        padding: 5rem 0;
+        background-color: #f8fafc;
+      }
+
+      .steps {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 3rem;
+      }
+
+      .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        max-width: 250px;
+      }
+
+      .step-number {
+        background-color: var(--primary-color);
+        color: white;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+      }
+
+      .step h3 {
+        margin-bottom: 0.5rem;
+      }
+
+      .step p {
+        color: var(--gray-color);
+      }
+
+      /* Testimonials Section */
+      .testimonials {
+        padding: 5rem 0;
+        background-color: white;
+      }
+
+      .testimonials-slider {
+        margin-top: 3rem;
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        gap: 2rem;
+        padding-bottom: 2rem;
+      }
+
+      .testimonial-card {
+        min-width: 300px;
+        flex: 1;
+        padding: 2rem;
+        background-color: #f8fafc;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        scroll-snap-align: start;
+      }
+
+      .testimonial-text {
+        font-style: italic;
+        margin-bottom: 1.5rem;
+      }
+
+      .testimonial-author {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .testimonial-author img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .author-info h4 {
+        margin-bottom: 0.25rem;
+      }
+
+      .author-info p {
+        color: var(--gray-color);
+        font-size: 0.875rem;
+      }
+
+      /* CTA Section */
+      .cta {
+        padding: 5rem 0;
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white;
+        text-align: center;
+      }
+
+      .cta h2 {
+        font-size: 2.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .cta p {
+        max-width: 600px;
+        margin: 0 auto 2rem;
+        opacity: 0.9;
+      }
+
+      .cta-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+      }
+
+      .btn-light {
+        background-color: white;
+        color: var(--primary-color);
+      }
+
+      .btn-light:hover {
+        background-color: #f8fafc;
+      }
+
+      .btn-outline-light {
+        background-color: transparent;
+        color: white;
+        border: 1px solid white;
+      }
+
+      .btn-outline-light:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      /* Footer */
+      .footer {
+        background-color: var(--dark-color);
+        color: white;
+        padding: 3rem 0;
+      }
+
+      .footer-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .footer-column h3 {
+        font-size: 1.25rem;
+        margin-bottom: 1.5rem;
+        color: white;
+      }
+
+      .footer-links {
+        list-style: none;
+      }
+
+      .footer-links li {
+        margin-bottom: 0.75rem;
+      }
+
+      .footer-links a {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        transition: color 0.3s;
+      }
+
+      .footer-links a:hover {
+        color: white;
+      }
+
+      .footer-bottom {
+        text-align: center;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .social-links a {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 1.25rem;
+        transition: color 0.3s;
+      }
+
+      .social-links a:hover {
+        color: white;
+      }
+
+      .copyright {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.875rem;
+      }
+
+      /* Responsive Styles */
+      @media (max-width: 768px) {
+        .navbar-container {
+          padding: 1rem;
+        }
+
+        .nav-links {
+          display: none;
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background-color: white;
+          flex-direction: column;
+          padding: 1rem;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-links.active {
+          display: flex;
+        }
+
+        .mobile-menu-btn {
+          display: block;
+        }
+
+        .hero h1 {
+          font-size: 2.5rem;
+        }
+
+        .hero-buttons {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .feature-card {
+          padding: 1.5rem;
+        }
+
+        .steps {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .cta-buttons {
+          flex-direction: column;
+          align-items: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="navbar-container container">
+        <a href="index.html" class="logo">
+          <span class="logo-text">EdPeer</span>
+        </a>
+
+        <button class="mobile-menu-btn">
+          <i class="fas fa-bars"></i>
+        </button>
+
+        <ul class="nav-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#how-it-works">How It Works</a></li>
+          <li><a href="#testimonials">Testimonials</a></li>
+          <li><a href="about.html">About Us</a></li>
+        </ul>
+
+        <div class="auth-buttons">
+          <a href="login.html" class="btn btn-outline">Login</a>
+          <a href="register.html" class="btn btn-primary">Sign Up</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-content">
+          <h1>Learn and Teach Through Peer-to-Peer Interaction</h1>
+          <p>
+            EdPeer connects tutees with expert peers for real-time learning
+            sessions. Exchange your expertise, earn credits, and build your
+            knowledge network.
+          </p>
+          <div class="hero-buttons">
+            <a href="register.html" class="btn btn-primary">Get Started</a>
+            <a href="#how-it-works" class="btn btn-outline">Learn More</a>
+          </div>
+          <img src="peertopeer.png" alt="EdPeer Platform" class="hero-image" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+      <div class="container">
+        <div class="section-title">
+          <h2>Why Choose EdPeer?</h2>
+          <p>
+            Our platform offers unique features designed to enhance your
+            learning experience.
+          </p>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <h3>Peer-to-Peer Learning</h3>
+            <p>
+              Connect with peers who have expertise in the topics you're
+              struggling with, and share your knowledge in return.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-comments"></i>
+            </div>
+            <h3>Real-Time Communication</h3>
+            <p>
+              Chat, use interactive whiteboards, and collaborate on code in
+              real-time for an effective learning experience.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-mask"></i>
+            </div>
+            <h3>Optional Anonymity</h3>
+            <p>
+              Tutors can choose to remain anonymous, removing barriers and
+              focusing purely on knowledge sharing.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-coins"></i>
+            </div>
+            <h3>Credit-Based System</h3>
+            <p>
+              Earn credits by teaching others and use them to get help when you
+              need it, creating a balanced ecosystem.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-laptop-code"></i>
+            </div>
+            <h3>Code Editor</h3>
+            <p>
+              Collaborate on code with syntax highlighting and real-time
+              editing, perfect for programming help.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-chalkboard"></i>
+            </div>
+            <h3>Interactive Whiteboard</h3>
+            <p>
+              Explain complex concepts visually using our interactive whiteboard
+              with drawing and text tools.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works" id="how-it-works">
+      <div class="container">
+        <div class="section-title">
+          <h2>How EdPeer Works</h2>
+          <p>Getting started with EdPeer is simple and straightforward.</p>
+        </div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <h3>Create an Account</h3>
+            <p>
+              Sign up and create your profile with your areas of expertise and
+              topics you need help with.
+            </p>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <h3>Request Help</h3>
+            <p>
+              Post a specific topic you need help with and our system will match
+              you with suitable peers.
+            </p>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <h3>Connect & Learn</h3>
+            <p>
+              Join a real-time session with your matched peer using our
+              interactive tools.
+            </p>
+          </div>
+          <div class="step">
+            <div class="step-number">4</div>
+            <h3>Pay It Forward</h3>
+            <p>
+              Share your knowledge in your areas of expertise to earn credits
+              for future sessions.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials" id="testimonials">
+      <div class="container">
+        <div class="section-title">
+          <h2>What Our Users Say</h2>
+          <p>
+            Hear from students and professionals who have experienced the
+            benefits of EdPeer.
+          </p>
+        </div>
+        <div class="testimonials-slider">
+          <div class="testimonial-card">
+            <p class="testimonial-text">
+              "EdPeer helped me understand complex programming concepts that I
+              was struggling with in my university courses. The real-time code
+              editor made it easy to collaborate and learn."
+            </p>
+            <div class="testimonial-author">
+              <img src="/api/placeholder/50/50" alt="User Avatar" />
+              <div class="author-info">
+                <h4>Ahmed H.</h4>
+                <p>Computer Science Student</p>
+              </div>
+            </div>
+          </div>
+          <div class="testimonial-card">
+            <p class="testimonial-text">
+              "I love being able to share my knowledge while remaining
+              anonymous. It creates a pressure-free environment where I can
+              focus on helping others without judgment."
+            </p>
+            <div class="testimonial-author">
+              <img src="/api/placeholder/50/50" alt="User Avatar" />
+              <div class="author-info">
+                <h4>Sara M.</h4>
+                <p>Mathematics Tutor</p>
+              </div>
+            </div>
+          </div>
+          <div class="testimonial-card">
+            <p class="testimonial-text">
+              "The credit system is brilliant! I help others with English
+              literature and use my earned credits to get help with calculus.
+              It's a win-win situation for everyone."
+            </p>
+            <div class="testimonial-author">
+              <img src="/api/placeholder/50/50" alt="User Avatar" />
+              <div class="author-info">
+                <h4>Rahim K.</h4>
+                <p>Liberal Arts Student</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+      <div class="container">
+        <h2>Ready to Transform Your Learning Experience?</h2>
+        <p>
+          Join EdPeer today and connect with peers who can help you succeed
+          academically and professionally.
+        </p>
+        <div class="cta-buttons">
+          <a href="register.html" class="btn btn-light">Sign Up Now</a>
+          <a href="about.html" class="btn btn-outline-light">Learn More</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-column">
+            <h3>EdPeer</h3>
+            <ul class="footer-links">
+              <li><a href="about.html">About Us</a></li>
+              <li><a href="contact.html">Contact</a></li>
+              <li><a href="careers.html">Careers</a></li>
+              <li><a href="blog.html">Blog</a></li>
+            </ul>
+          </div>
+          <div class="footer-column">
+            <h3>Resources</h3>
+            <ul class="footer-links">
+              <li><a href="help.html">Help Center</a></li>
+              <li><a href="tutorials.html">Tutorials</a></li>
+              <li><a href="faq.html">FAQ</a></li>
+              <li><a href="community.html">Community</a></li>
+            </ul>
+          </div>
+          <div class="footer-column">
+            <h3>Legal</h3>
+            <ul class="footer-links">
+              <li><a href="terms.html">Terms of Service</a></li>
+              <li><a href="privacy.html">Privacy Policy</a></li>
+              <li><a href="cookies.html">Cookie Policy</a></li>
+              <li><a href="security.html">Security</a></li>
+            </ul>
+          </div>
+          <div class="footer-column">
+            <h3>Contact Us</h3>
+            <ul class="footer-links">
+              <li><a href="mailto:info@edpeer.com">info@edpeer.com</a></li>
+              <li><a href="tel:+8801700000000">+880 1700 000 000</a></li>
+              <li>Green University of Bangladesh</li>
+              <li>Dhaka, Bangladesh</li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <div class="social-links">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+          </div>
+          <p class="copyright">© 2024 EdPeer. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Mobile Menu Toggle
+      const mobileMenuBtn = document.querySelector(".mobile-menu-btn");
+      const navLinks = document.querySelector(".nav-links");
+
+      mobileMenuBtn.addEventListener("click", () => {
+        navLinks.classList.toggle("active");
+      });
+
+      // Smooth Scrolling for Anchor Links
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", function (e) {
+          e.preventDefault();
+
+          const targetId = this.getAttribute("href");
+          if (targetId === "#") return;
+
+          const targetElement = document.querySelector(targetId);
+          if (targetElement) {
+            window.scrollTo({
+              top: targetElement.offsetTop - 80,
+              behavior: "smooth",
+            });
+
+            // Close mobile menu if open
+            if (navLinks.classList.contains("active")) {
+              navLinks.classList.remove("active");
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

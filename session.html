@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EdPeer - Session Request & Matching</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary-color: #2563eb;
+        --secondary-color: #10b981;
+        --accent-color: #8b5cf6;
+        --dark-color: #1e293b;
+        --light-color: #f8fafc;
+        --success-color: #22c55e;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --gray-color: #6b7280;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background-color: #f3f4f6;
+        color: var(--dark-color);
+        line-height: 1.6;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Navbar Styles */
+      .navbar {
+        background-color: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+      }
+
+      .navbar-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+      }
+
+      .logo-text {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 2rem;
+        list-style: none;
+      }
+
+      .nav-links li a {
+        text-decoration: none;
+        color: var(--dark-color);
+        font-weight: 500;
+        transition: color 0.3s;
+      }
+
+      .nav-links li a:hover {
+        color: var(--primary-color);
+      }
+
+      .user-menu {
+        position: relative;
+        cursor: pointer;
+      }
+
+      .user-profile {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .user-profile img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .user-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background-color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        min-width: 200px;
+        padding: 0.5rem 0;
+        display: none;
+        z-index: 100;
+      }
+
+      .user-dropdown.active {
+        display: block;
+      }
+
+      .user-dropdown a {
+        display: block;
+        padding: 0.75rem 1rem;
+        text-decoration: none;
+        color: var(--dark-color);
+        transition: background-color 0.3s;
+      }
+
+      .user-dropdown a:hover {
+        background-color: #f3f4f6;
+      }
+
+      .credits-display {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background-color: #dbeafe;
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-weight: 500;
+        color: var(--primary-color);
+      }
+
+      /* Main Content */
+      .main-content {
+        padding-top: 6rem;
+        padding-bottom: 3rem;
+        min-height: 80vh;
+      }
+
+      /* Tabs */
+      .tabs {
+        display: flex;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .tab {
+        padding: 1rem 1.5rem;
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--gray-color);
+        transition: all 0.3s;
+        border-bottom: 2px solid transparent;
+      }
+
+      .tab.active {
+        color: var(--primary-color);
+        border-bottom: 2px solid var(--primary-color);
+      }
+
+      .tab:hover {
+        color: var(--primary-color);
+      }
+
+      /* Tab Content */
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      /* Request Form */
+      .request-form {
+        background-color: white;
+        border-radius: 0.5rem;
+        padding: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        font-size: 1rem;
+        transition: border-color 0.3s;
+      }
+
+      .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+
+      .form-row {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .form-row .form-group {
+        flex: 1;
+        margin-bottom: 0;
+      }
+
+      .tag-input-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        min-height: 3.5rem;
+      }
+
+      .tag {
+        background-color: #dbeafe;
+        color: var(--primary-color);
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .tag button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--primary-color);
+        font-size: 0.875rem;
+      }
+
+      .tag-input {
+        flex: 1;
+        min-width: 100px;
+        border: none;
+        outline: none;
+        padding: 0.25rem;
+        font-size: 1rem;
+      }
+
+      .credit-slider {
+        width: 100%;
+      }
+
+      .slider-value {
+        text-align: center;
+        font-weight: 500;
+        color: var(--primary-color);
+        margin-top: 0.5rem;
+      }
+
+      .session-urgency {
+        display: flex;
+        gap: 1rem;
+      }
+
+      .urgency-option {
+        flex: 1;
+        text-align: center;
+        padding: 1rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .urgency-option:hover {
+        border-color: var(--primary-color);
+      }
+
+      .urgency-option.selected {
+        border-color: var(--primary-color);
+        background-color: #dbeafe;
+      }
+
+      .urgency-option i {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: var(--gray-color);
+      }
+
+      .urgency-option.selected i {
+        color: var(--primary-color);
+      }
+
+      .urgency-option h4 {
+        margin-bottom: 0.25rem;
+      }
+
+      .urgency-option p {
+        font-size: 0.875rem;
+        color: var(--gray-color);
+      }
+
+      .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.375rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+      }
+
+      .btn-primary {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+      }
+
+      .btn-primary:hover {
+        background-color: #1d4ed8;
+      }
+
+      .btn-lg {
+        font-size: 1.125rem;
+        padding: 1rem 2rem;
+      }
+
+      .btn-block {
+        display: block;
+        width: 100%;
+      }
+
+      /* Active Requests & Available Sessions */
+      .card {
+        background-color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+      }
+
+      .card-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .card-body {
+        padding: 1.5rem;
+      }
+
+      .session-card {
+        display: flex;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 1.5rem;
+        transition: background-color 0.3s;
+      }
+
+      .session-card:last-child {
+        border-bottom: none;
+      }
+
+      .session-card:hover {
+        background-color: #f9fafb;
+      }
+
+      .session-info {
+        flex: 1;
+      }
+
+      .session-title {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+        color: var(--dark-color);
+      }
+
+      .session-details {
+        color: var(--gray-color);
+        margin-bottom: 1rem;
+      }
+
+      .session-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .session-tag {
+        background-color: #e0f2fe;
+        color: #0369a1;
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.875rem;
+      }
+
+      .session-meta {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        font-size: 0.875rem;
+        color: var(--gray-color);
+      }
+
+      .session-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+
+      .session-actions {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 0.5rem;
+        min-width: 120px;
+      }
+
+      .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+      }
+
+      .btn-outline {
+        background-color: transparent;
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+      }
+
+      .btn-outline:hover {
+        background-color: #dbeafe;
+      }
+
+      .session-status {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+      }
+
+      .status-pending {
+        background-color: #fef3c7;
+        color: #d97706;
+      }
+
+      .status-matched {
+        background-color: #d1fae5;
+        color: #047857;
+      }
+
+      .status-urgent {
+        background-color: #fee2e2;
+        color: #dc2626;
+      }
+
+      /* Matching Results */
+      .matching-results {
+        background-color: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-top: 2rem;
+      }
+
+      .matching-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .matching-title {
+        font-size: 1.25rem;
+        color: #0369a1;
+      }
+
+      .tutor-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .tutor-card {
+        background-color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.3s;
+      }
+
+      .tutor-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .tutor-header {
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .tutor-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: #dbeafe;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.5rem;
+        color: var(--primary-color);
+        font-weight: 500;
+      }
+
+      .tutor-info h3 {
+        margin-bottom: 0.25rem;
+      }
+
+      .tutor-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        color: #fbbf24;
+      }
+
+      .tutor-body {
+        padding: 1.5rem;
+      }
+
+      .tutor-expertise {
+        margin-bottom: 1rem;
+      }
+
+      .tutor-expertise h4 {
+        margin-bottom: 0.5rem;
+        color: var(--gray-color);
+      }
+
+      .tutor-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+        font-size: 0.875rem;
+      }
+
+      .tutor-stat {
+        text-align: center;
+      }
+
+      .tutor-stat-value {
+        font-size: 1.25rem;
+        font-weight: 500;
+        color: var(--dark-color);
+      }
+
+      .tutor-stat-label {
+        color: var(--gray-color);
+      }
+
+      /* No Results */
+      .no-results {
+        text-align: center;
+        padding: 3rem 0;
+        color: var(--gray-color);
+      }
+
+      .no-results i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #d1d5db;
+      }
+
+      .no-results h3 {
+        margin-bottom: 0.5rem;
+        font-size: 1.5rem;
+      }
+
+      /* Responsive Styles */
+      @media (max-width: 768px) {
+        .navbar-container {
+          padding: 1rem;
+        }
+
+        .form-row {
+          flex-direction: column;
+          gap: 1.5rem;
+        }
+
+        .session-urgency {
+          flex-direction: column;
+        }
+
+        .session-card {
+          flex-direction: column;
+        }
+
+        .session-actions {
+          margin-top: 1rem;
+          flex-direction: row;
+          justify-content: flex-start;
+        }
+
+        .tutor-cards {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* Loading Spinner */
+      .loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid var(--primary-color);
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      /* Toast Notification */
+      .toast {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background-color: #d1fae5;
+        color: #047857;
+        padding: 1rem;
+        border-radius: 0.375rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        z-index: 1100;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+
+      .toast.show {
+        opacity: 1;
+      }
+
+      .toast.error {
+        background-color: #fee2e2;
+        color: #dc2626;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="navbar-container container">
+        <a href="index.html" class="logo">
+          <span class="logo-text">EdPeer</span>
+        </a>
+
+        <ul class="nav-links">
+          <li><a href="dashboard.html">Dashboard</a></li>
+          <li><a href="session-request.html" class="active">Find Help</a></li>
+          <li><a href="offer-help.html">Offer Help</a></li>
+          <li><a href="courses.html">Courses</a></li>
+        </ul>
+
+        <div class="user-menu">
+          <div class="credits-display">
+            <i class="fas fa-coins"></i>
+            <span id="user-credits">120</span> Credits
+          </div>
+          <div class="user-profile">
+            <img src="/api/placeholder/40/40" alt="User Profile" />
+            <span>Pranto</span>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <div class="user-dropdown">
+            <a href="profile.html"><i class="fas fa-user"></i> My Profile</a>
+            <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+            <a href="history.html"><i class="fas fa-history"></i> Session History</a>
+            <a href="wallet.html"><i class="fas fa-wallet"></i> Credits</a>
+            <a href="login.html"><i class="fas fa-sign-out-alt"></i> Logout</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="container">
+        <h1>Find Help & Request Sessions</h1>
+        <p>Request help with specific topics and get matched with qualified peers.</p>
+
+        <!-- Tabs -->
+        <div class="tabs">
+          <div class="tab active" data-tab="request-tab">Request Help</div>
+          <div class="tab" data-tab="active-tab">My Active Requests</div>
+          <div class="tab" data-tab="available-tab">Available Sessions</div>
+        </div>
+
+        <!-- Request Help Tab -->
+        <div class="tab-content active" id="request-tab">
+          <div class="request-form">
+            <h2>Create New Help Request</h2>
+            <form id="helpRequestForm">
+              <div class="form-group">
+                <label for="sessionTitle">Session Title</label>
+                <input
+                  type="text"
+                  id="sessionTitle"
+                  class="form-control"
+                  placeholder="e.g., Help with JavaScript Promises"
+                  required
+                />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="subjectCategory">Subject Category</label>
+                  <select id="subjectCategory" class="form-control" required>
+                    <option value="">Select a category</option>
+                    <option value="programming">Programming</option>
+                    <option value="mathematics">Mathematics</option>
+                    <option value="physics">Physics</option>
+                    <option value="chemistry">Chemistry</option>
+                    <option value="biology">Biology</option>
+                    <option value="business">Business</option>
+                    <option value="languages">Languages</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="difficulty">Difficulty Level</label>
+                  <select id="difficulty" class="form-control" required>
+                    <option value="">Select difficulty</option>
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                    <option value="expert">Expert</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="sessionDescription">Describe Your Problem</label>
+                <textarea
+                  id="sessionDescription"
+                  class="form-control"
+                  rows="4"
+                  placeholder="Describe the specific problem or concept you need help with."
+                  required
+                ></textarea>
+              </div>
+
+              <div class="form-group">
+                <label>Related Topics/Tags</label>
+                <div class="tag-input-container">
+                  <div class="tag">
+                    JavaScript <button type="button">&times;</button>
+                  </div>
+                  <div class="tag">
+                    Promises <button type="button">&times;</button>
+                  </div>
+                  <div class="tag">
+                    Async <button type="button">&times;</button>
+                  </div>
+                  <input
+                    type="text"
+                    class="tag-input"
+                    placeholder="Type and press Enter to add tags"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Session Urgency</label>
+                <div class="session-urgency">
+                  <div class="urgency-option" data-urgency="standard">
+                    <i class="far fa-clock"></i>
+                    <h4>Standard</h4>
+                    <p>Match within 24 hours</p>
+                    <p><strong>10 Credits</strong></p>
+                  </div>
+                  <div class="urgency-option selected" data-urgency="priority">
+                    <i class="fas fa-bolt"></i>
+                    <h4>Priority</h4>
+                    <p>Match within 6 hours</p>
+                    <p><strong>20 Credits</strong></p>
+                  </div>
+                  <div class="urgency-option" data-urgency="urgent">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <h4>Urgent</h4>
+                    <p>Match ASAP (1 hour)</p>
+                    <p><strong>30 Credits</strong></p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="sessionDuration">
+                  Expected Session Duration
+                  <span id="durationValue">30 minutes</span>
+                </label>
+                <input
+                  type="range"
+                  id="sessionDuration"
+                  class="credit-slider"
+                  min="15"
+                  max="120"
+                  step="15"
+                  value="30"
+                />
+                <div class="slider-labels" style="display: flex; justify-content: space-between; margin-top: 5px;">
+                  <span>15 min</span>
+                  <span>30 min</span>
+                  <span>45 min</span>
+                  <span>60 min</span>
+                  <span>120 min</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="additionalCredits">
+                  Additional Credits Offer
+                  <span id="creditValue">10 credits</span>
+                </label>
+                <input
+                  type="range"
+                  id="additionalCredits"
+                  class="credit-slider"
+                  min="0"
+                  max="50"
+                  step="5"
+                  value="10"
+                />
+                <div class="slider-labels" style="display: flex; justify-content: space-between; margin-top: 5px;">
+                  <span>0</span>
+                  <span>10</span>
+                  <span>20</span>
+                  <span>30</span>
+                  <span>40</span>
+                  <span>50</span>
+                </div>
+                <p style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--gray-color);">
+                  Offering additional credits increases the likelihood of getting matched with top tutors.
+                </p>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>
+                    <input type="checkbox" id="anonymousRequest" />
+                    Make this request anonymous
+                  </label>
+                </div>
+                <div class="form-group">
+                  <label>
+                    <input type="checkbox" id="recordSession" checked />
+                    Record session for personal reference
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <p style="font-weight: 500; margin-bottom: 0.5rem;">
+                  <i class="fas fa-info-circle"></i> Total Cost:
+                  <span id="totalCost" style="color: var(--primary-color);">30 Credits</span>
+                </p>
+                <p style="font-size: 0.875rem; color: var(--gray-color);">
+                  (Base: 20 credits for Priority + 10 additional credits)
+                </p>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-lg btn-block">
+                Submit Request
+              </button>
+            </form>
+          </div>
+
+          <div class="matching-results">
+            <div class="matching-header">
+              <h2 class="matching-title">Potential Matches</h2>
+              <p>
+                <i class="fas fa-info-circle"></i> These tutors match your
+                request based on their expertise
+              </p>
+            </div>
+            <div class="tutor-cards">
+              <div class="tutor-card">
+                <div class="tutor-header">
+                  <div class="tutor-avatar">
+                    <i class="fas fa-user"></i>
+                  </div>
+                  <div class="tutor-info">
+                    <h3>Anonymous Tutor</h3>
+                    <div class="tutor-rating">
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star-half-alt"></i>
+                      <span>4.5 (28 sessions)</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="tutor-body">
+                  <div class="tutor-expertise">
+                    <h4>Expertise:</h4>
+                    <div class="session-tags">
+                      <span class="session-tag">JavaScript</span>
+                      <span class="session-tag">React</span>
+                      <span class="session-tag">Node.js</span>
+                      <span class="session-tag">Async Programming</span>
+                    </div>
+                  </div>
+                  <div class="tutor-stats">
+                    <div class="tutor-stat">
+                      <div class="tutor-stat-value">28</div>
+                      <div class="tutor-stat-label">Sessions</div>
+                    </div>
+                    <div class="tutor-stat">
+                      <div class="tutor-stat-value">97%</div>
+                      <div class="tutor-stat-label">Satisfaction</div>
+                    </div>
+                    <div class="tutor-stat">
+                      <div class="tutor-stat-value">15m</div>
+                      <div class="tutor-stat-label">Avg. Response</div>
+                    </div>
+                  </div>
+                  <button class="btn btn-primary btn-block">
+                    Send Direct Request
+                  </button>
+                </div>
+              </div>
+
+              <div class="tutor-card">
+                <div class="tutor-header">
+                  <div class="tutor-avatar">
+                    <img src="/api/placeholder/60/60" alt="Tutor Profile" />
+                  </div>
+                  <div class="tutor-info">
+                    <h3>Samim Reza</h3>
+                    <div class="tutor-rating">
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <span>5.0 (42 sessions)</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="tutor-body">
+                  <div class="tutor-expertise">
+                    <h4>Expertise:</h4>
+                    <div class="session-tags">
+                      <span class="session-tag">JavaScript</span>
+                      <span class="session-tag">ES6+</span>
+                      <span class="session-tag">Promises</span>
+                      <span class="session-tag">Async/Await</span>
+                    </div>
+                  </div>
+                  <div class="tutor-stats">
+                    <div class="tutor-stat">
+                      <div class="tutor-stat-value">42</div>
+                      <div class="tutor-stat-label">Sessions</div>
+                    </div>
+                    <div class="tutor-stat">
+                      <div class="tutor-stat-value">100%</div>
+                      <div class="tutor-stat-label">Satisfaction</div>
+                    </div>
+                    <div class="tutor-stat">
+                      <div class="tutor-stat-value">5m</div>
+                      <div class="tutor-stat-label">Avg. Response</div>
+                    </div>
+                  </div>
+                  <button class="btn btn-primary btn-block">
+                    Send Direct Request
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- My Active Requests Tab -->
+        <div class="tab-content" id="active-tab">
+          <div class="card">
+            <div class="card-header">
+              <h3>Your Active Requests (2)</h3>
+              <div class="session-status status-pending">Pending Match</div>
+            </div>
+            <div class="card-body">
+              <div class="session-card">
+                <div class="session-info">
+                  <h3 class="session-title">Advanced JavaScript Concepts</h3>
+                  <div class="session-details">
+                    <div class="session-tags">
+                      <span class="session-tag">Closures</span>
+                      <span class="session-tag">Prototypes</span>
+                      <span class="session-tag">ES6</span>
+                    </div>
+                    <div class="session-meta">
+                      <span><i class="fas fa-clock"></i> Posted 2h ago</span>
+                      <span><i class="fas fa-coins"></i> 45 Credits</span>
+                      <span><i class="fas fa-bolt"></i> Priority</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="session-actions">
+                  <button class="btn btn-outline btn-sm">Edit Request</button>
+                  <button class="btn btn-outline btn-sm">Cancel</button>
+                </div>
+              </div>
+              
+              <div class="session-card">
+                <div class="session-info">
+                  <h3 class="session-title">React State Management</h3>
+                  <div class="session-details">
+                    <div class="session-tags">
+                      <span class="session-tag">Redux</span>
+                      <span class="session-tag">Context API</span>
+                    </div>
+                    <div class="session-meta">
+                      <span><i class="fas fa-clock"></i> Posted 5h ago</span>
+                      <span><i class="fas fa-coins"></i> 30 Credits</span>
+                      <span><i class="fas fa-clock"></i> Standard</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="session-actions">
+                  <button class="btn btn-outline btn-sm">Boost Request</button>
+                  <button class="btn btn-outline btn-sm">Cancel</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Available Sessions Tab -->
+        <div class="tab-content" id="available-tab">
+          <div class="card">
+            <div class="card-header">
+              <h3>Available Sessions (15)</h3>
+              <div class="filter-group">
+                <select class="form-control">
+                  <option>All Subjects</option>
+                  <option>Programming</option>
+                  <option>Mathematics</option>
+                </select>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="session-card">
+                <div class="session-info">
+                  <h3 class="session-title">Node.js Event Loop Explained</h3>
+                  <div class="session-details">
+                    <div class="session-tags">
+                      <span class="session-tag">Node.js</span>
+                      <span class="session-tag">Asynchronous</span>
+                    </div>
+                    <div class="session-meta">
+                      <span><i class="fas fa-user"></i> JohnDoe123</span>
+                      <span><i class="fas fa-coins"></i> 25 Credits</span>
+                      <span><i class="fas fa-clock"></i> 45 mins</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="session-actions">
+                  <button class="btn btn-primary btn-sm">Accept</button>
+                  <button class="btn btn-outline btn-sm">Details</button>
+                </div>
+              </div>
+
+              <div class="session-card">
+                <div class="session-info">
+                  <h3 class="session-title">Calculus Integration Basics</h3>
+                  <div class="session-details">
+                    <div class="session-tags">
+                      <span class="session-tag">Calculus</span>
+                      <span class="session-tag">Mathematics</span>
+                    </div>
+                    <div class="session-meta">
+                      <span><i class="fas fa-user"></i> MathExpert</span>
+                      <span><i class="fas fa-coins"></i> 35 Credits</span>
+                      <span><i class="fas fa-clock"></i> 1 hour</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="session-actions">
+                  <button class="btn btn-primary btn-sm">Accept</button>
+                  <button class="btn btn-outline btn-sm">Details</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast">
+      <i class="fas fa-check-circle"></i>
+      <span>Request submitted successfully!</span>
+    </div>
+
+    <script>
+      // Tab Functionality
+      const tabs = document.querySelectorAll('.tab');
+      const tabContents = document.querySelectorAll('.tab-content');
+
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const target = tab.dataset.tab;
+          
+          // Remove active classes
+          tabs.forEach(t => t.classList.remove('active'));
+          tabContents.forEach(tc => tc.classList.remove('active'));
+          
+          // Add active classes
+          tab.classList.add('active');
+          document.getElementById(target).classList.add('active');
+        });
+      });
+
+      // Urgency Selection
+      document.querySelectorAll('.urgency-option').forEach(option => {
+        option.addEventListener('click', () => {
+          document.querySelectorAll('.urgency-option').forEach(o => o.classList.remove('selected'));
+          option.classList.add('selected');
+          updateTotalCost();
+        });
+      });
+
+      // Slider Updates
+      const durationSlider = document.getElementById('sessionDuration');
+      const creditSlider = document.getElementById('additionalCredits');
+      
+      durationSlider.addEventListener('input', updateDuration);
+      creditSlider.addEventListener('input', updateCredits);
+
+      function updateDuration() {
+        document.getElementById('durationValue').textContent = 
+          `${durationSlider.value} minutes`;
+        updateTotalCost();
+      }
+
+      function updateCredits() {
+        document.getElementById('creditValue').textContent = 
+          `${creditSlider.value} credits`;
+        updateTotalCost();
+      }
+
+      function updateTotalCost() {
+        const baseCost = parseInt(document.querySelector('.urgency-option.selected')
+          .querySelector('strong').textContent);
+        const additional = parseInt(creditSlider.value);
+        document.getElementById('totalCost').textContent = 
+          `${baseCost + additional} Credits`;
+      }
+
+      // User Dropdown
+      const userMenu = document.querySelector('.user-menu');
+      const dropdown = document.querySelector('.user-dropdown');
+
+      userMenu.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('active');
+      });
+
+      document.addEventListener('click', () => {
+        dropdown.classList.remove('active');
+      });
+
+      // Form Submission
+      document.getElementById('helpRequestForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const toast = document.querySelector('.toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+      });
+
+      // Tag Input
+      const tagInput = document.querySelector('.tag-input');
+      tagInput.addEventListener('keypress', (e) => {
+        if(e.key === 'Enter' && tagInput.value.trim()) {
+          const tagContainer = tagInput.parentElement;
+          const newTag = document.createElement('div');
+          newTag.className = 'tag';
+          newTag.innerHTML = `
+            ${tagInput.value.trim()}
+            <button type="button">&times;</button>
+          `;
+          tagContainer.insertBefore(newTag, tagInput);
+          tagInput.value = '';
+        }
+      });
+
+      // Delete Tags
+      document.addEventListener('click', (e) => {
+        if(e.target.closest('.tag button')) {
+          e.target.closest('.tag').remove();
+        }
+      });
+    </script>
+  </body>
+</html>
