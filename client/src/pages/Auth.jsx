@@ -69,6 +69,11 @@ export default function Auth() {
                 <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
                   Sign In
                 </button>
+                <div className="text-center">
+                  <a href="/forgot-password" className="text-sm text-blue-600 hover:underline">
+                    Forgot your password?
+                  </a>
+                </div>
               </form>
             ) : (
               <form className="space-y-6">
@@ -77,6 +82,61 @@ export default function Auth() {
                   <div className="relative">
                     <FontAwesomeIcon icon={faUser} className="absolute left-3 top-3 text-gray-400" />
                     <input type="text" className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <div className="relative">
+                      <FontAwesomeIcon icon={faEnvelope} className="absolute left-3 top-3 text-gray-400" />
+                      <input type="email" className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                    <input type="text" className="w-full pl-4 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                    <input type="date" className="w-full pl-4 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+                    <input type="tel" className="w-full pl-4 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                    <input type="text" className="w-full pl-4 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <div className="relative">
+                      <FontAwesomeIcon icon={faLock} className="absolute left-3 top-3 text-gray-400" />
+                      <input type="password" className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                    <div className="relative">
+                      <FontAwesomeIcon icon={faLock} className="absolute left-3 top-3 text-gray-400" />
+                      <input type="password" className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Areas of Expertise (Optional)</label>
+                    <textarea className="w-full pl-4 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" rows="3"></textarea>
+                  </div>
+
+                  <div className="flex items-center">
+                    <input type="checkbox" id="terms" className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
+                    <label htmlFor="terms" className="ml-2 text-sm text-gray-700">
+                      I agree to the <a href="terms.html" target="_blank" className="text-blue-600 underline">Terms of Service</a> and <a href="privacy.html" target="_blank" className="text-blue-600 underline">Privacy Policy</a>
+                    </label>
                   </div>
                 </div>
 
