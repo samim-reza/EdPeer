@@ -1,10 +1,123 @@
-import { useState } from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEnvelope, faLock, faUser } from '@fortawesome/free-solid-svg-icons'
+import { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEnvelope, faLock, faUser } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate } from 'react-router-dom';
 
 export default function Auth() {
-  const [activeTab, setActiveTab] = useState('login')
-  const [showPassword, setShowPassword] = useState(false)
+  const [activeTab, setActiveTab] = useState('login');
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    full_name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    address: '',
+    date_of_birth: '',
+    mobile_number: '',
+    country: '',
+    expertise: '',
+    terms: false
+  });
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const validateLogin = () => {
+    const newErrors = {};
+    if (!formData.email) newErrors.email = 'Email is required';
+    if (!formData.password) newErrors.password = 'Password is required';
+    return newErrors;
+  };
+
+  const validateRegister = () => {
+    const newErrors = {};
+    if (!formData.full_name) newErrors.full_name = 'Full name is required';
+    if (!formData.email) newErrors.email = 'Email is required';
+    if (!formData.password) newErrors.password = 'Password is required';
+    if (formData.password !== formData.confirmPassword) 
+      newErrors.confirmPassword = 'Passwords do not match';
+    if (!formData.terms) newErrors.terms = 'You must accept the terms';
+    return newErrors;
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    const validationErrors = validateLogin();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Login failed');
+
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      navigate('/dashboard');
+    } catch (error) {
+      setErrors({ general: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    const validationErrors = validateRegister();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          full_name: formData.full_name,
+          email: formData.email,
+          password: formData.password,
+          address: formData.address,
+          date_of_birth: formData.date_of_birth,
+          mobile_number: formData.mobile_number,
+          country: formData.country,
+          expertise: formData.expertise
+        })
+      });
+      console.log(formData);
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Registration failed');
+
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      navigate('/dashboard');
+    } catch (error) {
+      setErrors({ general: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -39,13 +152,22 @@ export default function Auth() {
 
           <div className="p-8">
             {activeTab === 'login' ? (
-              <form className="space-y-6">
+              <form onSubmit={handleLogin} className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                   <div className="relative">
                     <FontAwesomeIcon icon={faEnvelope} className="absolute left-3 top-3 text-gray-400" />
-                    <input type="email" className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+                    <input 
+                      type="email" 
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 ${
+                        errors.email ? 'border-red-500' : 'focus:ring-blue-500'
+                      }`} 
+                    />
                   </div>
+                  {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                 </div>
 
                 <div>
@@ -54,7 +176,12 @@ export default function Auth() {
                     <FontAwesomeIcon icon={faLock} className="absolute left-3 top-3 text-gray-400" />
                     <input
                       type={showPassword ? 'text' : 'password'}
-                      className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 ${
+                        errors.password ? 'border-red-500' : 'focus:ring-blue-500'
+                      }`}
                     />
                     <button
                       type="button"
@@ -64,11 +191,17 @@ export default function Auth() {
                       {showPassword ? 'Hide' : 'Show'}
                     </button>
                   </div>
+                  {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
                 </div>
 
-                <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
-                  Sign In
+                <button 
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {loading ? 'Signing In...' : 'Sign In'}
                 </button>
+                {errors.general && <p className="text-red-500 text-center">{errors.general}</p>}
                 <div className="text-center">
                   <a href="/forgot-password" className="text-sm text-blue-600 hover:underline">
                     Forgot your password?
@@ -76,75 +209,153 @@ export default function Auth() {
                 </div>
               </form>
             ) : (
-              <form className="space-y-6">
+              <form onSubmit={handleRegister} className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                   <div className="relative">
                     <FontAwesomeIcon icon={faUser} className="absolute left-3 top-3 text-gray-400" />
-                    <input type="text" className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+                    <input 
+                      type="text" 
+                      name="full_name"
+                      value={formData.full_name}
+                      onChange={handleInputChange}
+                      className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 ${
+                        errors.full_name ? 'border-red-500' : 'focus:ring-blue-500'
+                      }`} 
+                    />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <div className="relative">
-                      <FontAwesomeIcon icon={faEnvelope} className="absolute left-3 top-3 text-gray-400" />
-                      <input type="email" className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />
-                    </div>
+                  {errors.full_name && <p className="text-red-500 text-sm mt-1">{errors.full_name}</p>}
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <div className="relative">
+                    <FontAwesomeIcon icon={faEnvelope} className="absolute left-3 top-3 text-gray-400" />
+                    <input 
+                      type="email" 
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 ${
+                        errors.email ? 'border-red-500' : 'focus:ring-blue-500'
+                      }`} 
+                    />
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                    <input type="text" className="w-full pl-4 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-                    <input type="date" className="w-full pl-4 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
-                    <input type="tel" className="w-full pl-4 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
-                    <input type="text" className="w-full pl-4 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <div className="relative">
-                      <FontAwesomeIcon icon={faLock} className="absolute left-3 top-3 text-gray-400" />
-                      <input type="password" className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-                    <div className="relative">
-                      <FontAwesomeIcon icon={faLock} className="absolute left-3 top-3 text-gray-400" />
-                      <input type="password" className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Areas of Expertise (Optional)</label>
-                    <textarea className="w-full pl-4 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" rows="3"></textarea>
-                  </div>
-
-                  <div className="flex items-center">
-                    <input type="checkbox" id="terms" className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
-                    <label htmlFor="terms" className="ml-2 text-sm text-gray-700">
-                      I agree to the <a href="terms.html" target="_blank" className="text-blue-600 underline">Terms of Service</a> and <a href="privacy.html" target="_blank" className="text-blue-600 underline">Privacy Policy</a>
-                    </label>
-                  </div>
+                  {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                 </div>
 
-                {/* Add other registration fields similarly */}
-                
-                <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
-                  Create Account
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                  <input 
+                    type="text" 
+                    name="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    className="w-full pl-4 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" 
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                  <input 
+                    type="date" 
+                    name="date_of_birth"
+                    value={formData.date_of_birth}
+                    onChange={handleInputChange}
+                    className="w-full pl-4 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" 
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+                  <input 
+                    type="tel" 
+                    name="mobile_number"
+                    value={formData.mobile_number}
+                    onChange={handleInputChange}
+                    className="w-full pl-4 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" 
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                  <input 
+                    type="text" 
+                    name="country"
+                    value={formData.country}
+                    onChange={handleInputChange}
+                    className="w-full pl-4 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" 
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                  <div className="relative">
+                    <FontAwesomeIcon icon={faLock} className="absolute left-3 top-3 text-gray-400" />
+                    <input 
+                      type="password" 
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 ${
+                        errors.password ? 'border-red-500' : 'focus:ring-blue-500'
+                      }`}
+                    />
+                  </div>
+                  {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                  <div className="relative">
+                    <FontAwesomeIcon icon={faLock} className="absolute left-3 top-3 text-gray-400" />
+                    <input 
+                      type="password" 
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                      className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 ${
+                        errors.confirmPassword ? 'border-red-500' : 'focus:ring-blue-500'
+                      }`}
+                    />
+                  </div>
+                  {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Areas of Expertise (Optional)</label>
+                  <textarea 
+                    name="expertise"
+                    value={formData.expertise}
+                    onChange={handleInputChange}
+                    className="w-full pl-4 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" 
+                    rows="3"
+                  ></textarea>
+                </div>
+
+                <div className="flex items-center">
+                  <input 
+                    type="checkbox" 
+                    id="terms" 
+                    name="terms"
+                    checked={formData.terms}
+                    onChange={handleInputChange}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" 
+                  />
+                  <label htmlFor="terms" className="ml-2 text-sm text-gray-700">
+                    I agree to the <a href="terms.html" target="_blank" className="text-blue-600 underline">Terms of Service</a> and <a href="privacy.html" target="_blank" className="text-blue-600 underline">Privacy Policy</a>
+                  </label>
+                </div>
+                {errors.terms && <p className="text-red-500 text-sm">{errors.terms}</p>}
+
+                <button 
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {loading ? 'Creating Account...' : 'Create Account'}
                 </button>
+                {errors.general && <p className="text-red-500 text-center">{errors.general}</p>}
               </form>
             )}
 
@@ -177,5 +388,5 @@ export default function Auth() {
         </div>
       </div>
     </div>
-  )
+  );
 }
