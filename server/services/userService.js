@@ -4,6 +4,23 @@ const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
 require('dotenv').config();
 
+const generateToken = (user) => {
+    return jwt.sign(
+        {
+            id: user.id,
+            email: user.email,
+            fullName: user.fullName,
+            address: user.address,
+            dateOfBirth: user.dateOfBirth,
+            phone: user.phone,
+            country: user.country,
+            expertise: user.expertise,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+    );
+}
+
 const registerUser = async ({
   email,
   password,
@@ -48,6 +65,33 @@ const registerUser = async ({
   }
 };
 
+const loginUser = async (email, password) => {
+    try {
+        if(!email) throw new Error("Email is required");
+        if(!password) throw new Error("Password is required");
+
+        const user = await User.findOne({
+            where: {
+                email,
+            }
+        });
+
+        if(!user) throw new Error("User not found");
+
+        const isPassValid = await bcrypt.compare(password, user.password);
+
+        if(!isPassValid) throw new Error("Invalid Password");
+
+        const token = generateToken(user);
+
+        return {token, user};
+
+    }catch(error) {
+        throw new Error(error.message);
+    }
+}
+
 module.exports = {
-    registerUser
+    registerUser,
+    loginUser,
 }

@@ -1,4 +1,4 @@
-const {registerUser} = require("../services/userService");
+const {registerUser, loginUser} = require("../services/userService");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
@@ -50,6 +50,24 @@ const register = async (req, res) => {
     }
 }
 
+const login = async (req, res) => {
+    const {email, password} = req.body;
+
+    try{
+        const {user, token} = await loginUser(email, password);
+
+        res.status(200).json({
+            message: "User logged in successfully",
+            data: {user, token},
+        })
+    }catch(err){
+        res.status(400).json({
+            message: err.message
+        })
+    }
+}
+
 module.exports = {
-    register
+    register,
+    login
 }
