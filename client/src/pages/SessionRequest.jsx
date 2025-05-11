@@ -196,14 +196,14 @@ export default function SessionRequest() {
                   </select>
                 </div>
                 <div className="space-y-4">
-                  <label className="block text-lg font-medium">Teach/Learn</label>
+                  <label className="block text-lg font-medium">As Tutor/Tutees</label>
                   <select 
                     className="w-full p-4 border rounded-lg"
                     value={choice}
                     onChange={(e) => setchoice(e.target.value)}
                   >
-                    <option>Teach</option>
-                    <option>Learn</option>
+                    <option>Tutor</option>
+                    <option>Tutees</option>
                   </select>
                 </div>
               </div>
