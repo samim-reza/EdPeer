@@ -10,7 +10,7 @@ export default function SessionRequest() {
   const [topic, setTopic] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Programming');
-  const [difficulty, setDifficulty] = useState('Intermediate');
+  const [choice, setchoice] = useState('Intermediate');
   const [tags, setTags] = useState(['JavaScript']);
   const [newTag, setNewTag] = useState('');
   const [activeSessions, setActiveSessions] = useState([]);
@@ -196,15 +196,14 @@ export default function SessionRequest() {
                   </select>
                 </div>
                 <div className="space-y-4">
-                  <label className="block text-lg font-medium">Difficulty Level</label>
+                  <label className="block text-lg font-medium">Teach/Learn</label>
                   <select 
                     className="w-full p-4 border rounded-lg"
-                    value={difficulty}
-                    onChange={(e) => setDifficulty(e.target.value)}
+                    value={choice}
+                    onChange={(e) => setchoice(e.target.value)}
                   >
-                    <option>Beginner</option>
-                    <option>Intermediate</option>
-                    <option>Advanced</option>
+                    <option>Teach</option>
+                    <option>Learn</option>
                   </select>
                 </div>
               </div>
@@ -256,40 +255,58 @@ export default function SessionRequest() {
                 </select>
               </div>
 
-              <div className="space-y-6">
-                <label className="block text-lg font-medium">Session Urgency</label>
-                <div className="grid md:grid-cols-3 gap-4">
-                  {['standard', 'priority', 'urgent'].map((type) => (
-                    <div
-                      key={type}
-                      onClick={() => setUrgency(type)}
-                      className={`p-6 border-2 rounded-xl cursor-pointer transition-all ${
-                        urgency === type 
-                          ? 'border-blue-500 bg-blue-50' 
-                          : 'border-gray-200 hover:border-blue-300'
-                      }`}
-                    >
-                      <div className="text-center">
-                        <FontAwesomeIcon 
-                          icon={type === 'urgent' ? faExclamationCircle : type === 'priority' ? faBolt : faClock}
-                          className={`text-3xl mb-4 ${
-                            urgency === type ? 'text-blue-500' : 'text-gray-400'
-                          }`}
+              <div className="space-y-4">
+                <label className="block text-lg font-medium">Payment Option</label>
+                <div className="grid gap-4">
+                  <div className="border rounded-lg p-4 relative">
+                    <input 
+                      type="radio" 
+                      id="pay-credits" 
+                      name="payment-option" 
+                      defaultChecked 
+                      className="absolute top-5 left-4" 
+                    />
+                    <div className="pl-8">
+                      <label htmlFor="pay-credits" className="font-bold flex items-center">
+                        <FontAwesomeIcon icon={faCoins} className="mr-2 text-yellow-500" />
+                        Pay with Credits
+                      </label>
+                      <p className="text-gray-600 mt-1">Use credits to request this session</p>
+                      <div className="mt-3">
+                        <input
+                          type="text"
+                          placeholder="Offered credit amount"
+                          className="w-full p-3 border rounded"
                         />
-                        <h3 className="text-xl font-bold mb-2 capitalize">{type}</h3>
-                        <p className="text-gray-600 mb-2">
-                          {type === 'standard' && 'Match within 24 hours'}
-                          {type === 'priority' && 'Match within 6 hours'}
-                          {type === 'urgent' && 'Match ASAP (1 hour)'}
-                        </p>
-                        <div className="text-lg font-bold text-blue-500">
-                          {costMap[type]} Credits
-                        </div>
                       </div>
                     </div>
-                  ))}
+                  </div>
+                  
+                  <div className="border rounded-lg p-4 relative">
+                    <input 
+                      type="radio" 
+                      id="exchange-knowledge" 
+                      name="payment-option" 
+                      className="absolute top-5 left-4" 
+                    />
+                    <div className="pl-8">
+                      <label htmlFor="exchange-knowledge" className="font-bold flex items-center">
+                        <FontAwesomeIcon icon={faBolt} className="mr-2 text-blue-500" />
+                        Exchange Knowledge
+                      </label>
+                      <p className="text-gray-600 mt-1">Offer to teach something in return</p>
+                      <div className="mt-3">
+                        <input
+                          type="text"
+                          placeholder="What can you teach in exchange?"
+                          className="w-full p-3 border rounded"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
+            
 
               <div className="space-y-6">
                 <button 
@@ -297,7 +314,7 @@ export default function SessionRequest() {
                   className="w-full bg-blue-500 text-white py-4 rounded-xl hover:bg-blue-600 transition"
                   disabled={loading}
                 >
-                  {loading ? 'Processing...' : `Submit Request (Total: ${cost} Credits)`}
+                  {loading ? 'Processing...' : `Submit Request`}
                 </button>
               </div>
             </form>
