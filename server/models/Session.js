@@ -28,10 +28,6 @@ const Session = sequelize.define("Session", {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    title: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
     status: {
         type: DataTypes.ENUM("pending", "running", "completed"),
         allowNull: false,
