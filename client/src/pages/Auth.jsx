@@ -90,7 +90,7 @@ export default function Auth() {
 
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      const response = await fetch('http://localhost:5000/users/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -109,8 +109,8 @@ export default function Auth() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Registration failed');
 
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('token', data.data.token);
+      localStorage.setItem('user', JSON.stringify(data.data.user));
       navigate('/dashboard');
     } catch (error) {
       setErrors({ general: error.message });
