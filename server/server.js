@@ -3,6 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const dashboardRoutes = require('./dashboardRoutes');
 const profileRoutes = require('./profile');
+const sessionRoutes = require('./session');
 require('dotenv').config();
 
 const app = express();
@@ -35,3 +36,5 @@ app.listen(PORT, () => {
 app.use('/api/dashboard', dashboardRoutes);
 
 app.use('/api/profile', profileRoutes);
+
+app.use('/api/sessions', sessionRoutes);
