@@ -87,6 +87,7 @@ app.set("trust proxy", 1);
 
 // Routes
 app.use("/users", userRoutes);
+app.use("/sessions", require("./routes/sessionRoutes"));
 // app.use("/contests", require("./routes/contestRoutes"));
 // app.use("/admins", require("./routes/adminRoutes"));
 // app.use("/problems", require("./routes/problemRoutes"));
