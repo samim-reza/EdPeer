@@ -185,7 +185,7 @@ return (
               <span className="absolute -top-1 -right-1 bg-blue-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">5</span>
             </button>
             <div className="flex items-center space-x-2">
-              <img src="https://via.placeholder.com/40" alt="Profile" className="rounded-full" />
+              <img src="https://via.placeholder.com/40" alt="" className="rounded-full" />
               <span className="text-gray-700">Samim</span>
             </div>
           </div>
@@ -277,7 +277,12 @@ return (
           </NavLink>
           <button
             onClick={() => {
-              // Logout logic will go here
+              // Clear user authentication data
+              localStorage.removeItem('token');
+              localStorage.removeItem('user');
+
+              // Redirect to login page
+              window.location.href = '/login';
               console.log('Logging out...');
             }}
             className="flex items-center space-x-3 p-2 rounded-lg text-gray-600 hover:bg-gray-100 w-full text-left mt-4"
