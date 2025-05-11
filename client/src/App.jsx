@@ -5,7 +5,7 @@ import Auth from './pages/Auth';
 import LearningSession from './pages/LearningSession';
 import ProfileManagement from './pages/ProfileManagement';
 import SessionRequest from './pages/SessionRequest';
-import AllSessions from './pages/all-session'
+import AllSessions from './pages/AllSession'
 
 export default function App() {
   return (
