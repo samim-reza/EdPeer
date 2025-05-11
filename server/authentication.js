@@ -1,21 +1,8 @@
-const express = require('express');
-const mysql = require('mysql2/promise');
+const express = require('express'); 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-
-require('dotenv').config();
+const pool = require('./config/database');
 const router = express.Router();
-
-// Create MySQL connection pool
-const pool = mysql.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-});
 
 // Generate JWT token function
 const generateToken = (userId, email) => {
