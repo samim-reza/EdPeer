@@ -8,6 +8,10 @@ const Session = sequelize.define("Session", {
         autoIncrement: true,
         allowNull: false,
     },
+    title: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
     senderId: {
         type: DataTypes.INTEGER,
         allowNull: true,
