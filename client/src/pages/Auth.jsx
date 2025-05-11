@@ -74,6 +74,7 @@ export default function Auth() {
       localStorage.setItem('user', JSON.stringify(data.user));
       navigate('/dashboard');
     } catch (error) {
+      console.log(error.message)
       setErrors({ general: error.message });
     } finally {
       setLoading(false);

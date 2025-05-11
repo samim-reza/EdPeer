@@ -5,6 +5,7 @@ import Auth from './pages/Auth';
 import LearningSession from './pages/LearningSession';
 import ProfileManagement from './pages/ProfileManagement';
 import SessionRequest from './pages/SessionRequest';
+import AllSessionsPage from './pages/all-session'
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/session-request" element={<SessionRequest />} />
         <Route path="/login" element={<Auth />} />
         <Route path="/register" element={<Auth />} />
+        <Route path="/all-sessions" element={<AllSessionsPage />} />
       </Routes>
     </Router>
   );
