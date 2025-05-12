@@ -6,4 +6,7 @@ select * from Users;
 
 delete  from Users;
 
-select * from sessions;
+select * from Sessions;
+
+alter table Sessions
+modify status enum("pending", "completed", "cancelled");
