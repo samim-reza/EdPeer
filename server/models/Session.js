@@ -8,6 +8,7 @@ const Session = sequelize.define("Session", {
         autoIncrement: true,
         allowNull: false,
     },
+<<<<<<< HEAD
     senderId: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -25,6 +26,33 @@ const Session = sequelize.define("Session", {
         type: DataTypes.ENUM("credit", "learning"),
         allowNull: false,
     },
+=======
+    title: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    senderId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+    },
+    receiverId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+    },
+    senderWant: {
+        type: DataTypes.ENUM("Teach", "Learn"),
+        allowNull: false,
+    },
+    category: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    status: {
+        type: DataTypes.ENUM("pending", "running", "completed", "cancelled"),
+        allowNull: false,
+        defaultValue: "pending"
+    },
+>>>>>>> my-temp-work
     duration: {
         type: DataTypes.INTEGER,
         allowNull: false,
