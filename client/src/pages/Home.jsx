@@ -36,7 +36,7 @@ export default function Home() {
             </div>
             
             <div className="hidden md:flex space-x-8">
-            <a href="" className="text-gray-700 hover:text-blue-600">Sessions</a>
+            <a href="all-sessions" className="text-gray-700 hover:text-blue-600">Sessions</a>
               <a href="#features" className="text-gray-700 hover:text-blue-600">Features</a>
               <a href="#how-it-works" className="text-gray-700 hover:text-blue-600">How It Works</a>
               <a href="#testimonials" className="text-gray-700 hover:text-blue-600">Testimonials</a>

@@ -6,6 +6,8 @@ import LearningSession from './pages/LearningSession';
 import ProfileManagement from './pages/ProfileManagement';
 import SessionRequest from './pages/SessionRequest';
 import AllSessions from './pages/AllSession'
+import AcceptedSessionsPage from './pages/AccpetedSessions';
+import VideoCallRoom from './pages/Room/VideoCallRoom';
 
 export default function App() {
   return (
@@ -19,6 +21,9 @@ export default function App() {
         <Route path="/login" element={<Auth />} />
         <Route path="/register" element={<Auth />} />
         <Route path="/all-sessions" element={<AllSessions />} />
+        <Route path="/accepted-sessions" element={<AcceptedSessionsPage />} />
+        <Route path="/room/:sessionId" element={<VideoCallRoom />} />
+        {/* Add more routes as needed */}
       </Routes>
     </Router>
   );

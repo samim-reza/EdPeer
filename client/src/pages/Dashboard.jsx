@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { NavLink } from 'react-router-dom';
-import { 
-  faBell, 
-  faEnvelope, 
-  faBars, 
-  faHeadset, 
-  faCheckCircle, 
-  faCoins, 
+import {
+  faBell,
+  faEnvelope,
+  faBars,
+  faHeadset,
+  faCheckCircle,
+  faCoins,
   faStar,
   faCode,
   faUser,
@@ -16,8 +16,9 @@ import {
   faCog,
   faSignOutAlt,
   faHome,
-  faExclamationCircle
-} from '@fortawesome/free-solid-svg-icons';
+  faExclamationCircle,
+  faArrowRight,
+} from "@fortawesome/free-solid-svg-icons";
 import api from '../config/api-client';
 
 export default function Dashboard() {
@@ -226,6 +227,17 @@ return (
           >
             <FontAwesomeIcon icon={faCode} className="w-5 h-5" />
             <span>Learning Session</span>
+          </NavLink>
+          <NavLink
+            to="/accepted-sessions"
+            className={({ isActive }) => 
+              `flex items-center space-x-3 p-2 rounded-lg ${
+                isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100'
+              }`
+            }
+          >
+            <FontAwesomeIcon icon={faArrowRight} className="w-5 h-5" />
+            <span>Accepted Session</span>
           </NavLink>
 
           <NavLink
