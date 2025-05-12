@@ -29,13 +29,9 @@ const Session = sequelize.define("Session", {
         allowNull: false,
     },
     status: {
-        type: DataTypes.ENUM("pending", "running", "completed"),
+        type: DataTypes.ENUM("pending", "running", "completed", "cancelled"),
         allowNull: false,
         defaultValue: "pending"
-    },
-    inExchange: {
-        type: DataTypes.ENUM("credit", "learning"),
-        allowNull: false,
     },
     duration: {
         type: DataTypes.INTEGER,
