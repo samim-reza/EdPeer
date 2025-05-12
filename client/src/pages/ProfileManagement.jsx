@@ -5,6 +5,7 @@ import axios from "axios";
 import ProfileTab from "./ProfileManagement/ProfileTab";
 import SecurityTab from "./ProfileManagement/SecurityTab";
 import ExpertiseTab from "./ProfileManagement/ExpertiseTab";
+import Sidebar from "./shared/SideBar";
 
 export default function ProfileManagement() {
   const [activeTab, setActiveTab] = useState("personal");
@@ -25,6 +26,7 @@ export default function ProfileManagement() {
     mobile_number: "",
     country: "",
     totalSessions: 0,
+    profilePicture: "",
   });
 
   // Form states
@@ -34,6 +36,7 @@ export default function ProfileManagement() {
     date_of_birth: "",
     mobile_number: "",
     country: "",
+    profilePicture: "",
   });
 
   const [sessions, setSessions] = useState([]);
@@ -60,6 +63,7 @@ export default function ProfileManagement() {
           mobile_number: profileData.mobile_number,
           country: profileData.country,
           totalSessions: profileData.total_session,
+          profilePicture: profileData.profilePicture,
         });
         setPersonalInfo({
           full_name: profileData.full_name,
@@ -67,6 +71,7 @@ export default function ProfileManagement() {
           date_of_birth: profileData.date_of_birth || "",
           mobile_number: profileData.mobile_number || "",
           country: profileData.country || "",
+          profilePicture: profileData.profilePicture || "",
         });
         setLoading(false);
       } catch (err) {
@@ -114,6 +119,12 @@ export default function ProfileManagement() {
       );
       setProfile({ ...profile, ...personalInfo });
       setLoading(false);
+
+      // ✅ Update only the profile picture in localStorage
+      const userData = JSON.parse(localStorage.getItem("user"));
+      userData.profilePicture = personalInfo.profilePicture;
+      localStorage.setItem("user", JSON.stringify(userData));
+
       alert("Profile updated successfully");
     } catch (err) {
       console.error("Error updating profile:", err);
@@ -121,6 +132,7 @@ export default function ProfileManagement() {
       setLoading(false);
     }
   };
+
 
   if (loading && !profile.full_name) {
     return (
@@ -139,138 +151,58 @@ export default function ProfileManagement() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      {/* Profile Header */}
-      <div className="flex flex-col md:flex-row items-center gap-8 mb-12">
-        <div className="relative">
-          <img
-            src="https://via.placeholder.com/150"
-            alt="Profile"
-            className="w-32 h-32 rounded-full border-4 border-blue-500"
-          />
+    <>
+      <Sidebar />
+      <div className="max-w-6xl mx-auto p-6 ms-64">
+        {/* Profile Header */}
+
+        {/* Tabs */}
+        <div className="flex flex-wrap gap-4 border-b mb-8 mt-12">
+          {["personal", "security", "expertise"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-6 py-3 capitalize ${
+                activeTab === tab
+                  ? "border-b-2 border-blue-500 text-blue-600"
+                  : "text-gray-500 hover:text-blue-500"
+              }`}
+            >
+              {tab.replace("-", " ")}
+            </button>
+          ))}
         </div>
-        <div className="text-center md:text-left">
-          <h1 className="text-3xl font-bold mb-2">{profile.full_name}</h1>
-          <p className="text-gray-600 mb-4">{profile.email}</p>
-          <div className="flex gap-8">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
-                {profile.rating || "N/A"}
-              </div>
-              <div className="text-gray-500 text-sm">Average Rating</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
-                {profile.totalSessions}
-              </div>
-              <div className="text-gray-500 text-sm">Sessions</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
-                {profile.credits}
-              </div>
-              <div className="text-gray-500 text-sm">Credits</div>
-            </div>
-          </div>
+
+        {/* Tab Content */}
+        <div className="space-y-8">
+          {/* Personal Info */}
+          {activeTab === "personal" && (
+            <ProfileTab
+              profile={profile}
+              loading={loading}
+              personalInfo={personalInfo}
+              handlePersonalInfoChange={handlePersonalInfoChange}
+              updatePersonalInfo={updatePersonalInfo}
+            />
+          )}
+
+          {/* Security */}
+          {activeTab === "security" && <SecurityTab />}
+
+          {/* Expertise */}
+          {activeTab === "expertise" && (
+            <ExpertiseTab
+              profile={profile}
+              loading={loading}
+              setLoading={setLoading}
+              setError={setError}
+              setProfile={setProfile}
+            />
+          )}
+
+          
         </div>
       </div>
-
-      {/* Tabs */}
-      <div className="flex flex-wrap gap-4 border-b mb-8">
-        {["personal", "security", "expertise", "history"].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-6 py-3 capitalize ${
-              activeTab === tab
-                ? "border-b-2 border-blue-500 text-blue-600"
-                : "text-gray-500 hover:text-blue-500"
-            }`}
-          >
-            {tab.replace("-", " ")}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab Content */}
-      <div className="space-y-8">
-        {/* Personal Info */}
-        {activeTab === "personal" && (
-          <ProfileTab
-            profile={profile}
-            loading={loading}
-            personalInfo={personalInfo}
-            handlePersonalInfoChange={handlePersonalInfoChange}
-            updatePersonalInfo={updatePersonalInfo}
-          />
-        )}
-
-        {/* Security */}
-        {activeTab === "security" && <SecurityTab />}
-
-        {/* Expertise */}
-        {activeTab === "expertise" && (
-          <ExpertiseTab
-            profile={profile}
-            loading={loading}
-            setLoading={setLoading}
-            setError={setError}
-            setProfile={setProfile}
-          />
-        )}
-
-        {/* Session History */}
-        {activeTab === "history" && (
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-2xl font-bold mb-6">Session History</h2>
-            {loading ? (
-              <div className="text-center p-10">
-                <FontAwesomeIcon icon={faSpinner} spin size="2x" />
-              </div>
-            ) : sessions.length > 0 ? (
-              <div className="space-y-4">
-                {sessions.map((session) => (
-                  <div
-                    key={session.id}
-                    className="p-4 border rounded-lg flex justify-between items-center"
-                  >
-                    <div>
-                      <h3 className="font-bold mb-2">{session.topic}</h3>
-                      <div className="text-sm text-gray-500 mb-2">
-                        {new Date(session.created_at).toLocaleDateString()} -{" "}
-                        {session.duration}
-                      </div>
-                      {session.rating && (
-                        <div className="flex items-center gap-1 text-yellow-500">
-                          <FontAwesomeIcon icon={faStar} />
-                          <span>{session.rating}</span>
-                        </div>
-                      )}
-                      <div className="text-sm">With: {session.other_user}</div>
-                    </div>
-                    <span
-                      className={`px-3 py-1 rounded ${
-                        session.status === "completed"
-                          ? "bg-green-100 text-green-600"
-                          : session.status === "scheduled"
-                          ? "bg-blue-100 text-blue-600"
-                          : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-                      {session.status.charAt(0).toUpperCase() +
-                        session.status.slice(1)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                No session history found
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
+    </>
   );
 }

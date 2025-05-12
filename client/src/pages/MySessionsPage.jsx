@@ -13,7 +13,8 @@ export default function MySessionsPage() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const userId = localStorage.getItem("userId"); // Assuming you store user ID in localStorage
+  const user = localStorage.getItem("user");
+  const userId = user ? JSON.parse(user).id : null;
 
   useEffect(() => {
     fetchUserSessions();
@@ -23,7 +24,7 @@ export default function MySessionsPage() {
     try {
       setLoading(true);
       const response = await axios.get(
-        `/sessions/getSingleUserSession/${userId}`
+        `http://localhost:5000/sessions/getSingleUserSession/${userId}`
       );
       setSessions(response.data.data);
       setError(null);
@@ -39,8 +40,10 @@ export default function MySessionsPage() {
     try {
       setLoading(true);
       await axios.put(
-        `/sessions/cancel/${sessionId}`,
-        {},
+        `http://localhost:5000/sessions/changeStatus/${sessionId}`,
+        {
+          status: "cancelled",
+        },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }

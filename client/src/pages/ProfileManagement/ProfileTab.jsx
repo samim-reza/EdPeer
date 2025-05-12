@@ -86,6 +86,16 @@ export default function ProfileTab({
             className="w-full p-3 border rounded"
           />
         </div>
+        <div className="md:col-span-2">
+          <label className="block mb-2">Profile Picture Link</label>
+          <input
+            type="text"
+            name="profilePicture"
+            value={personalInfo.profilePicture || ""}
+            onChange={handlePersonalInfoChange}
+            className="w-full p-3 border rounded"
+          />
+        </div>
         <div className="md:col-span-2 flex gap-4">
           <button
             type="submit"

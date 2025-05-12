@@ -33,6 +33,8 @@ export default function ExpertiseTab({
       // Convert array to comma-separated string before sending
       const expertiseString = expertiseList.join(",");
 
+      console.log("Expertise String:", expertiseString);
+
       await axios.put(`http://localhost:5000/users/updateExpertise/${userId}`, {
         expertise: expertiseString,
       });

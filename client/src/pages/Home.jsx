@@ -27,33 +27,6 @@ const testimonials = [
 export default function Home() {
   return (
     <div className="bg-gray-50">
-      {/* Navbar */}
-      <nav className="bg-white shadow-sm fixed w-full z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center">
-              <span className="text-2xl font-bold text-blue-600">EdPeer</span>
-            </div>
-            
-            <div className="hidden md:flex space-x-8">
-            <a href="all-sessions" className="text-gray-700 hover:text-blue-600">Sessions</a>
-              <a href="#features" className="text-gray-700 hover:text-blue-600">Features</a>
-              <a href="#how-it-works" className="text-gray-700 hover:text-blue-600">How It Works</a>
-              <a href="#testimonials" className="text-gray-700 hover:text-blue-600">Testimonials</a>
-              <a href="#about-us" className="text-gray-700 hover:text-blue-600">About Us</a>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <a href="/login" className="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50">
-                Login
-              </a>
-              <a href="/register" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                Sign Up
-              </a>
-            </div>
-          </div>
-        </div>
-      </nav>
 
       {/* Hero Section */}
       <section className="pt-32 pb-16 bg-gradient-to-b from-blue-50 to-blue-100">
