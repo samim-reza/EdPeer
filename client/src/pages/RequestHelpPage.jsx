@@ -8,7 +8,7 @@ export default function RequestHelpPage({ onSessionCreated }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Programming");
-  const [senderWant, setSenderWant] = useState("teach"); // "teach" or "learn"
+  const [inExchange, setInExchange] = useState("teach"); // "teach" or "learn"
   const [tags, setTags] = useState([]);
   const [newTag, setNewTag] = useState("");
   const [loading, setLoading] = useState(false);
@@ -32,11 +32,11 @@ export default function RequestHelpPage({ onSessionCreated }) {
         title,
         category,
         description,
-        senderId: senderWant === "teach" ? user.id : null,
-        receiverId: senderWant === "learn" ? user.id : null,
+        senderId: inExchange === "teach" ? user.id : null,
+        receiverId: inExchange === "learn" ? user.id : null,
         tags: tags.join(","), // Convert array to comma-separated string
         duration,
-        senderWant,
+        senderWant: inExchange,
         creditExchange:
           paymentMethod === "creditExchange" ? creditAmount : null,
         startTime,
@@ -70,15 +70,11 @@ export default function RequestHelpPage({ onSessionCreated }) {
         }
       );
 
-      if(response.status === 201){
-        alert("Session created successfully!");
-      }
-
       // Reset form on success
       setTitle("");
       setDescription("");
       setCategory("Programming");
-      setSenderWant("teach");
+      setInExchange("teach");
       setTags([]);
       setDuration(30);
       setPaymentMethod("creditExchange");
@@ -86,8 +82,11 @@ export default function RequestHelpPage({ onSessionCreated }) {
       setExchangeTopic("");
       setStartTime("");
 
+      console.log(response.data);
       // Call parent callback with the created session ID
-      onSessionCreated(response.data.id);
+      if (response.data.message === "Session created successfully") {
+        alert("Session created successfully");
+      }
     } catch (err) {
       setError(
         err.response?.data?.message || err.message || "Failed to create session"
@@ -152,8 +151,8 @@ export default function RequestHelpPage({ onSessionCreated }) {
               <label className="block text-lg font-medium">Session Type*</label>
               <select
                 className="w-full p-4 border rounded-lg"
-                value={senderWant}
-                onChange={(e) => setSenderWant(e.target.value)}
+                value={inExchange}
+                onChange={(e) => setInExchange(e.target.value)}
                 required
               >
                 <option value="teach">I want to teach</option>

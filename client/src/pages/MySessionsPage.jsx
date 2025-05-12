@@ -7,13 +7,13 @@ import {
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import api from "../config/api-client";
 
 export default function MySessionsPage() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const user = localStorage.getItem("user");
-  const userId = user ? JSON.parse(user).id : null;
+  const userId = localStorage.getItem("userId"); // Assuming you store user ID in localStorage
 
   useEffect(() => {
     fetchUserSessions();
@@ -23,7 +23,7 @@ export default function MySessionsPage() {
     try {
       setLoading(true);
       const response = await axios.get(
-        `http://localhost:5000/sessions/getSingleUserSession/${userId}`
+        `/sessions/getSingleUserSession/${userId}`
       );
       setSessions(response.data.data);
       setError(null);
@@ -39,14 +39,14 @@ export default function MySessionsPage() {
     try {
       setLoading(true);
       await axios.put(
-        `http://localhost:5000/sessions/changeStatus/${sessionId}`,
-        { status: "cancelled" }, // Send the new status in the request body
+        `/sessions/cancel/${sessionId}`,
+        {},
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
       alert("Session cancelled successfully!");
-      fetchUserSessions(); // Refresh the session list
+      fetchUserSessions();
       setError(null);
     } catch (err) {
       setError("Failed to cancel session");
@@ -60,8 +60,8 @@ export default function MySessionsPage() {
     try {
       setLoading(true);
       await axios.put(
-        `http://localhost:5000/sessions/changeStatus/${sessionId}`,
-        { status: "cancelled" }, // Send the new status in the request body
+        `/sessions/complete/${sessionId}`,
+        {},
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import {
   FaMicrophone,
@@ -11,12 +11,34 @@ import {
   FaEllipsisH,
   FaUserFriends,
   FaComments,
-  FaShareSquare,
 } from "react-icons/fa";
+import io from "socket.io-client";
 
 const VideoCallRoom = () => {
   const { sessionId } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
+
+  // Extract session data from location state or query params
+  const sessionData = location.state?.sessionData || {};
+  const senderId =
+    sessionData.senderId ||
+    new URLSearchParams(location.search).get("senderId");
+  const receiverId =
+    sessionData.receiverId ||
+    new URLSearchParams(location.search).get("receiverId");
+
+  // Get current user ID from localStorage
+  const userId = localStorage.getItem("userId");
+
+  // Determine user role (teacher/student) based on IDs
+  const userRole =
+    userId === senderId
+      ? "teacher"
+      : userId === receiverId
+      ? "student"
+      : "unknown";
+
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [videoEnabled, setVideoEnabled] = useState(true);
   const [screenSharing, setScreenSharing] = useState(false);
@@ -24,28 +46,181 @@ const VideoCallRoom = () => {
   const [chatOpen, setChatOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
+  const [socket, setSocket] = useState(null);
+  const [peerConnection, setPeerConnection] = useState(null);
+  const [connectionEstablished, setConnectionEstablished] = useState(false);
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const chatContainerRef = useRef(null);
+  const localStreamRef = useRef(null);
+  const screenStreamRef = useRef(null);
+
+  // Check if user role is unknown and redirect if necessary
+  useEffect(() => {
+    if (userRole === "unknown") {
+      toast.error("Unable to determine your role in this session");
+      navigate("/accepted-sessions");
+    }
+  }, [userRole, navigate]);
 
   useEffect(() => {
-    // Initialize video streams (simulated)
-    setupMediaDevices();
+    // Initialize socket connection
+    const newSocket = io("http://localhost:5000");
+    setSocket(newSocket);
 
-    // Simulate participant joining
-    setTimeout(() => {
-      setParticipants([
-        { id: 1, name: "Teacher" },
-        { id: 2, name: "Student" },
-      ]);
-    }, 1000);
+    // Connection status handling
+    newSocket.on("connect", () => {
+      console.log("Connected to socket server");
+      toast.success("Connected to session server");
 
-    // Cleanup on unmount
+      // Join the room with all necessary IDs for role determination
+      newSocket.emit("join-room", {
+        sessionId,
+        userId,
+        senderId,
+        receiverId,
+      });
+    });
+
+    newSocket.on("connect_error", (err) => {
+      console.error("Socket connection error:", err);
+      toast.error("Failed to connect to session server");
+    });
+
     return () => {
+      if (newSocket) {
+        newSocket.disconnect();
+      }
+      if (peerConnection) {
+        peerConnection.close();
+      }
       stopAllMediaStreams();
     };
-  }, []);
+  }, [sessionId, userId, senderId, receiverId]);
 
+  // Initialize WebRTC when socket is ready
+  useEffect(() => {
+    if (!socket) return;
+
+    const pc = new RTCPeerConnection({
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" },
+        // Add your TURN servers here if needed
+      ],
+    });
+
+    // Handle ICE candidates
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit("ice-candidate", {
+          sessionId,
+          candidate: event.candidate,
+        });
+      }
+    };
+
+    // Handle connection state changes
+    pc.onconnectionstatechange = (event) => {
+      console.log("Connection state:", pc.connectionState);
+      if (pc.connectionState === "connected") {
+        setConnectionEstablished(true);
+        toast.success("Connection established with other participant");
+      } else if (
+        pc.connectionState === "disconnected" ||
+        pc.connectionState === "failed"
+      ) {
+        setConnectionEstablished(false);
+      }
+    };
+
+    // Handle remote stream
+    pc.ontrack = (event) => {
+      console.log("Received remote track", event.streams[0]);
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = event.streams[0];
+      }
+    };
+
+    setPeerConnection(pc);
+
+    // Socket event listeners for WebRTC signaling
+    socket.on("offer", async (offer) => {
+      console.log("Received offer", userRole);
+      try {
+        if (userRole === "student") {
+          await pc.setRemoteDescription(new RTCSessionDescription(offer));
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          socket.emit("answer", { sessionId, answer });
+        }
+      } catch (err) {
+        console.error("Error handling offer:", err);
+        toast.error("Connection error: " + err.message);
+      }
+    });
+
+    socket.on("answer", async (answer) => {
+      console.log("Received answer", userRole);
+      try {
+        if (userRole === "teacher") {
+          await pc.setRemoteDescription(new RTCSessionDescription(answer));
+        }
+      } catch (err) {
+        console.error("Error handling answer:", err);
+        toast.error("Connection error: " + err.message);
+      }
+    });
+
+    socket.on("ice-candidate", async (candidate) => {
+      try {
+        await pc.addIceCandidate(new RTCIceCandidate(candidate));
+      } catch (err) {
+        console.error("Error adding ICE candidate:", err);
+      }
+    });
+
+    // Socket event listeners for room events
+    socket.on("user-connected", (participant) => {
+      const role = participant.userRole === "teacher" ? "Teacher" : "Student";
+      toast.success(`${role} joined the session`);
+      setParticipants((prev) => [...prev, participant]);
+    });
+
+    socket.on("user-disconnected", (socketId) => {
+      toast.warning("Other participant left the session");
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = null;
+      }
+      setConnectionEstablished(false);
+      setParticipants((prev) => prev.filter((p) => p.socketId !== socketId));
+    });
+
+    socket.on("room-participants", (roomParticipants) => {
+      setParticipants(roomParticipants);
+    });
+
+    // Initialize local media
+    setupLocalMedia(pc);
+
+    return () => {
+      pc.close();
+    };
+  }, [socket, sessionId, userRole]);
+
+  // Chat event listener
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("chat-message", (message) => {
+      setMessages((prev) => [...prev, message]);
+    });
+
+    return () => {
+      socket.off("chat-message");
+    };
+  }, [socket]);
+
+  // Scroll chat to bottom when messages change
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop =
@@ -53,44 +228,58 @@ const VideoCallRoom = () => {
     }
   }, [messages]);
 
-  const setupMediaDevices = async () => {
+  const setupLocalMedia = async (pc) => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
         video: true,
       });
+      localStreamRef.current = stream;
 
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
       }
 
-      // Simulate remote stream (in a real app, this would come from WebRTC)
-      setTimeout(() => {
-        if (remoteVideoRef.current) {
-          remoteVideoRef.current.srcObject = stream.clone();
+      // Add tracks to peer connection
+      stream.getTracks().forEach((track) => {
+        pc.addTrack(track, stream);
+      });
+
+      // If teacher, create offer
+      if (userRole === "teacher") {
+        try {
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          socket.emit("offer", { sessionId, offer });
+        } catch (err) {
+          console.error("Error creating offer:", err);
+          toast.error("Could not start call: " + err.message);
         }
-      }, 1500);
+      }
     } catch (err) {
       toast.error("Could not access media devices: " + err.message);
+      console.error(err);
     }
   };
 
   const stopAllMediaStreams = () => {
-    if (localVideoRef.current?.srcObject) {
-      localVideoRef.current.srcObject
-        .getTracks()
-        .forEach((track) => track.stop());
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((track) => track.stop());
     }
-    if (remoteVideoRef.current?.srcObject) {
-      remoteVideoRef.current.srcObject
-        .getTracks()
-        .forEach((track) => track.stop());
+    if (screenStreamRef.current) {
+      screenStreamRef.current.getTracks().forEach((track) => track.stop());
+    }
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = null;
+    }
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = null;
     }
   };
 
   const toggleAudio = () => {
-    if (localVideoRef.current?.srcObject) {
-      const audioTracks = localVideoRef.current.srcObject.getAudioTracks();
+    if (localStreamRef.current) {
+      const audioTracks = localStreamRef.current.getAudioTracks();
       audioTracks.forEach((track) => {
         track.enabled = !audioEnabled;
       });
@@ -99,8 +288,8 @@ const VideoCallRoom = () => {
   };
 
   const toggleVideo = () => {
-    if (localVideoRef.current?.srcObject) {
-      const videoTracks = localVideoRef.current.srcObject.getVideoTracks();
+    if (localStreamRef.current) {
+      const videoTracks = localStreamRef.current.getVideoTracks();
       videoTracks.forEach((track) => {
         track.enabled = !videoEnabled;
       });
@@ -111,41 +300,95 @@ const VideoCallRoom = () => {
   const toggleScreenShare = async () => {
     try {
       if (screenSharing) {
-        await setupMediaDevices();
-      } else {
-        const stream = await navigator.mediaDevices.getDisplayMedia({
-          video: true,
+        // Switch back to camera
+        const stream = await navigator.mediaDevices.getUserMedia({
           audio: true,
+          video: true,
         });
+
+        // Replace the video track
+        const videoTrack = stream.getVideoTracks()[0];
+        const sender = peerConnection
+          .getSenders()
+          .find((s) => s.track.kind === "video");
+
+        if (sender) {
+          sender.replaceTrack(videoTrack);
+        }
 
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = stream;
         }
+
+        // Stop the screen stream
+        if (screenStreamRef.current) {
+          screenStreamRef.current.getTracks().forEach((track) => track.stop());
+        }
+
+        // Update state
+        localStreamRef.current = stream;
+        setScreenSharing(false);
+      } else {
+        // Start screen sharing
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: true,
+          audio: true,
+        });
+        screenStreamRef.current = stream;
+
+        // Replace the video track
+        const videoTrack = stream.getVideoTracks()[0];
+        const sender = peerConnection
+          .getSenders()
+          .find((s) => s.track.kind === "video");
+
+        if (sender) {
+          sender.replaceTrack(videoTrack);
+        }
+
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+        }
+
+        setScreenSharing(true);
+
+        // Handle when user stops screen sharing
+        stream.getVideoTracks()[0].onended = () => {
+          toggleScreenShare();
+        };
       }
-      setScreenSharing(!screenSharing);
     } catch (err) {
       toast.error("Could not share screen: " + err.message);
     }
   };
 
   const leaveCall = () => {
+    if (socket) {
+      socket.emit("leave-room", sessionId);
+    }
     stopAllMediaStreams();
     navigate("/accepted-sessions");
     toast.success("You left the session");
   };
 
   const sendMessage = () => {
-    if (message.trim()) {
-      setMessages([...messages, { sender: "You", text: message }]);
+    if (message.trim() && socket) {
+      const newMessage = { sender: "You", text: message };
+      setMessages([...messages, newMessage]);
+      socket.emit("chat-message", { sessionId, message: newMessage });
       setMessage("");
+    }
+  };
 
-      // Simulate reply
-      setTimeout(() => {
-        setMessages((prev) => [
-          ...prev,
-          { sender: "Teacher", text: "Thanks for your message!" },
-        ]);
-      }, 1000);
+  // Handle message input change
+  const handleMessageChange = (e) => {
+    setMessage(e.target.value);
+  };
+
+  // Handle Enter key in chat input
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      sendMessage();
     }
   };
 
@@ -162,7 +405,7 @@ const VideoCallRoom = () => {
             className="w-full h-full object-cover"
           />
           <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 px-2 py-1 rounded">
-            {participants.find((p) => p.id === 1)?.name || "Remote Participant"}
+            {userRole === "teacher" ? "Student" : "Teacher"}
           </div>
         </div>
 
@@ -176,7 +419,7 @@ const VideoCallRoom = () => {
             className="w-full h-full object-cover"
           />
           <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 px-2 py-1 rounded">
-            You
+            You ({userRole})
           </div>
         </div>
 
@@ -209,8 +452,8 @@ const VideoCallRoom = () => {
               <input
                 type="text"
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+                onChange={handleMessageChange}
+                onKeyPress={handleKeyPress}
                 placeholder="Type a message..."
                 className="flex-grow bg-gray-700 rounded-l px-3 py-2 text-sm focus:outline-none"
               />
@@ -300,7 +543,8 @@ const VideoCallRoom = () => {
 
       {/* Session Info */}
       <div className="bg-gray-800 p-2 text-center text-sm">
-        Session ID: {sessionId} | {participants.length} participants
+        Session ID: {sessionId} | Role: {userRole} | {participants.length + 1}{" "}
+        participants
       </div>
     </div>
   );

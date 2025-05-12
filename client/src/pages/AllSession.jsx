@@ -39,7 +39,7 @@ const AllSessions = () => {
     try {
       await axios.put(
         `http://localhost:5000/sessions/acceptSession/${sessionId}`,
-        { receiverId: userId }, // Include receiverId in the request body
+        { receiverId: userId },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
